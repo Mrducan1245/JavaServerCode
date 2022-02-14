@@ -5,35 +5,37 @@ import java.nio.charset.StandardCharsets;
 import static java.lang.System.in;
 
 public class ReciveServer<fileURL> {
-    private static final String fileURL = "C:\\Users\\Mrducan\\Desktop\\picture\\woaininiaiwo.png";
+    private static final String filePath = "C:\\Users\\Mrducan\\Desktop\\picture\\";
+    private static String fileURL;
 
     public static void main(String[] args) throws IOException {
 //        reciveServer.fileURL = reciveServer.getFileName();
         ServerSocket serverSocket = new ServerSocket(8009);
-
         System.out.println("监听中...");
+        System.out.println("文件地址及名字："+fileURL);
         while (true){
+            fileURL = filePath + getFileName();
             ioStreamSet(serverSocket);
         }
     }
 
-//    public String getFileName(){
-//
-//        try {
-////            byte[] bs = strFileSize.getBytes(StandardCharsets.UTF_8);
-//            //发送大小信息到服务端
-//            DatagramSocket ds=new DatagramSocket(8009);
-//            byte[] data = new byte[1024];
-//            DatagramPacket dp=new DatagramPacket(data,data.length);
-//            ds.receive(dp);
-//            fileURL = new String(data,0,dp.getLength());
-//            System.out.println("文件名为："+fileURL);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return  fileURL;
-//
-//    }
+    public static String getFileName(){
+        DatagramSocket ds = null;
+        String fileName = null;
+        try {
+            ds=new DatagramSocket(9000);
+            byte[] data = new byte[1024];
+            DatagramPacket dp=new DatagramPacket(data,data.length);
+            ds.receive(dp);
+            fileName = new String(data, 0, dp.getLength());
+            System.out.println("文件名为："+fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            ds.close();
+        }
+        return  fileName;
+    }
 
 
     public static void ioStreamSet(ServerSocket serverSocket){
@@ -41,10 +43,12 @@ public class ReciveServer<fileURL> {
         try {
             socket = serverSocket.accept();
             InputStream in = socket.getInputStream();
+            DataInputStream dis = new DataInputStream(in);
             FileOutputStream fOS = new FileOutputStream(fileURL);
             byte[] byteBuffer = new byte[1024];
-            while (in.read(byteBuffer) != -1){
-                fOS.write(byteBuffer);
+            int length = 0;
+            while ((length =dis.read(byteBuffer,0,byteBuffer.length))>0){
+                fOS.write(byteBuffer,0,length);
                 fOS.flush();
             }
             fOS.close();
